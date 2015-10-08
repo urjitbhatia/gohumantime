@@ -1,4 +1,4 @@
-package main
+package gohumantime
 
 import (
 	"errors"
@@ -11,13 +11,13 @@ import (
 const (
 	unitRegexpPattern      = "(second|minute|hour|day|week|month|year)s?"
 	connectorRegexpPattern = "and|,"
-	second                 = 1000
-	minute                 = second * 60
-	hour                   = minute * 60
-	day                    = hour * 24
-	week                   = day * 7
-	month                  = day * 30
-	year                   = day * 365
+	Second                 = 1000
+	Minute                 = Second * 60
+	Hour                   = Minute * 60
+	Day                    = Hour * 24
+	Week                   = Day * 7
+	Month                  = Day * 30
+	Year                   = Day * 365
 )
 
 /*
@@ -32,13 +32,16 @@ type humanInterval struct {
 /*
  * processUnits converts time unit words like "minute" into the correct millisecond multiplier
  */
-func processUnits(time string) int {
+func processUnits(time string) (int, error) {
 
 	if strings.TrimSpace(time) == "" {
-		return 0
+		return 0, nil
 	}
 
 	fields := strings.Fields(time)
+	if len(fields) < 2 {
+		return 0, errors.New("No usable time literals found")
+	}
 	num, err := strconv.Atoi(fields[0])
 	unit := fields[1]
 	if err != nil {
@@ -47,22 +50,22 @@ func processUnits(time string) int {
 	var unitNum int
 	switch unit {
 	case "second":
-		unitNum = second
+		unitNum = Second
 	case "minute":
-		unitNum = minute
+		unitNum = Minute
 	case "hour":
-		unitNum = hour
+		unitNum = Hour
 	case "day":
-		unitNum = day
+		unitNum = Day
 	case "week":
-		unitNum = week
+		unitNum = Week
 	case "month":
-		unitNum = month
+		unitNum = Month
 	case "year":
-		unitNum = year
+		unitNum = Year
 	}
 
-	return unitNum * num
+	return unitNum * num, nil
 }
 
 /*
@@ -99,13 +102,16 @@ func (h humanInterval) toMilliseconds(humanReadableTime string) (sum int, err er
 	}()
 
 	if strings.TrimSpace(humanReadableTime) == "" {
-		return 0, errors.New("Cannot parse empty humanReadable value")
+		return 0, nil
 	}
 
-	timeString := h.wordNumbersToDecimals(humanReadableTime)
+	timeString := h.wordNumbersToDecimals(strings.ToLower(humanReadableTime))
 	timeString = h.unitRegexp.ReplaceAllString(timeString, "$1,")
 	for _, s := range h.connectorRegexp.Split(timeString, -1) {
-		sum += processUnits(s)
+		s, err := processUnits(s)
+		if err == nil {
+			sum += s
+		}
 	}
 	return sum, err
 }
@@ -119,22 +125,9 @@ func (h humanInterval) wordNumbersToDecimals(time string) string {
 	for _, f := range fields {
 		if val, ok := h.languageMap[f]; ok {
 			var matchStr string
-			if val > 1 {
-				matchStr = strconv.Itoa(val)
-			} else {
-				matchStr = "" // ignore 1 since its unity
-			}
+			matchStr = strconv.Itoa(val)
 			time = strings.Replace(time, f, matchStr, 1)
 		}
 	}
 	return time
-}
-
-func main() {
-	val, err := ToMilliseconds("1 minute2 second 22 years")
-	if err == nil {
-		log.Printf("valuie: %d", val)
-	} else {
-		log.Printf("errir:", err)
-	}
 }
