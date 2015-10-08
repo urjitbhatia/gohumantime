@@ -1,6 +1,8 @@
 # gohumantime
 A human readable time translator in golang
 
+[![GoDoc](https://godoc.org/github.com/urjitbhatia/gohumantime?status.svg)](https://godoc.org/github.com/urjitbhatia/gohumantime)
+
 # Motivation
 Use a simple human readable string representation of time
 Inspired by: https://github.com/rschmukler/human-interval
