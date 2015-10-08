@@ -11,18 +11,33 @@ import (
 const (
 	unitRegexpPattern      = "(second|minute|hour|day|week|month|year)s?"
 	connectorRegexpPattern = "and|,"
+	second                 = 1000
+	minute                 = second * 60
+	hour                   = minute * 60
+	day                    = hour * 24
+	week                   = day * 7
+	month                  = day * 30
+	year                   = day * 365
 )
 
-type HumanInterval struct {
-	languageMap     map[string]int
-	unitRegexp      *regexp.Regexp
-	connectorRegexp *regexp.Regexp
+/*
+ * HumanInterval holds internal data and methods to help converting a human readable time string into milliseconds
+ */
+type humanInterval struct {
+	languageMap     map[string]int // Word to number map
+	unitRegexp      *regexp.Regexp // Cached unit regex
+	connectorRegexp *regexp.Regexp // Cached connector regex
 }
 
+/*
+ * processUnits converts time unit words like "minute" into the correct millisecond multiplier
+ */
 func processUnits(time string) int {
+
 	if strings.TrimSpace(time) == "" {
 		return 0
 	}
+
 	fields := strings.Fields(time)
 	num, err := strconv.Atoi(fields[0])
 	unit := fields[1]
@@ -32,26 +47,29 @@ func processUnits(time string) int {
 	var unitNum int
 	switch unit {
 	case "second":
-		unitNum = 1000
+		unitNum = second
 	case "minute":
-		unitNum = 1000 * 60
+		unitNum = minute
 	case "hour":
-		unitNum = 1000 * 60 * 60
+		unitNum = hour
 	case "day":
-		unitNum = 1000 * 60 * 60 * 24
+		unitNum = day
 	case "week":
-		unitNum = 1000 * 60 * 60 * 24 * 7
+		unitNum = week
 	case "month":
-		unitNum = 1000 * 60 * 60 * 24 * 30
+		unitNum = month
 	case "year":
-		unitNum = 1000 * 60 * 60 * 24 * 365
+		unitNum = year
 	}
 
 	return unitNum * num
 }
 
-func NewHumanInterval() HumanInterval {
-	return HumanInterval{map[string]int{
+/*
+ * NewHumanInterval
+ */
+func ToMilliseconds(humanReadableTime string) (int, error) {
+	return humanInterval{map[string]int{
 		"one":   1,
 		"two":   2,
 		"three": 3,
@@ -65,10 +83,20 @@ func NewHumanInterval() HumanInterval {
 	},
 		regexp.MustCompile(unitRegexpPattern),
 		regexp.MustCompile(connectorRegexpPattern),
-	}
+	}.toMilliseconds(humanReadableTime)
 }
 
-func (h HumanInterval) ToMilliseconds(humanReadableTime string) (int, error) {
+/*
+ * toMilliseconds converts a humanReadableTime string to milliseconds
+ */
+func (h humanInterval) toMilliseconds(humanReadableTime string) (sum int, err error) {
+
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("Recovered panic in HumanInterval::ToMilliseconds", r)
+			err = errors.New("Malformed input")
+		}
+	}()
 
 	if strings.TrimSpace(humanReadableTime) == "" {
 		return 0, errors.New("Cannot parse empty humanReadable value")
@@ -76,18 +104,20 @@ func (h HumanInterval) ToMilliseconds(humanReadableTime string) (int, error) {
 
 	timeString := h.wordNumbersToDecimals(humanReadableTime)
 	timeString = h.unitRegexp.ReplaceAllString(timeString, "$1,")
-	sum := 0
 	for _, s := range h.connectorRegexp.Split(timeString, -1) {
 		sum += processUnits(s)
 	}
-	return sum, nil
+	return sum, err
 }
 
-func (hi HumanInterval) wordNumbersToDecimals(time string) string {
+/*
+ * wordNumbersToDecimals replaces word numbers like "one", "two" into numeric literals like "1", "2" etc
+ */
+func (h humanInterval) wordNumbersToDecimals(time string) string {
 
 	fields := strings.Fields(time)
 	for _, f := range fields {
-		if val, ok := hi.languageMap[f]; ok {
+		if val, ok := h.languageMap[f]; ok {
 			var matchStr string
 			if val > 1 {
 				matchStr = strconv.Itoa(val)
@@ -101,8 +131,7 @@ func (hi HumanInterval) wordNumbersToDecimals(time string) string {
 }
 
 func main() {
-	hi := NewHumanInterval()
-	val, err := hi.ToMilliseconds("1 minute, 0 minutes")
+	val, err := ToMilliseconds("1 minute2 second 22 years")
 	if err == nil {
 		log.Printf("valuie: %d", val)
 	} else {
