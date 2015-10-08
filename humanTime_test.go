@@ -1,10 +1,9 @@
 package gohumantime_test
 
 import (
-	. "github.com/urjitbhatia/gohumantime"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/urjitbhatia/gohumantime"
 )
 
 var _ = Describe("HumanTime", func() {
@@ -21,6 +20,10 @@ var _ = Describe("HumanTime", func() {
 			It("missing seconds, return 0", func() {
 				Expect(ToMilliseconds("second")).To(Equal(0))
 			})
+
+			It("fifty seconds", func() {
+				Expect(ToMilliseconds("fifty seconds")).To(Equal(50 * Second))
+			})
 		})
 
 		Context("seconds and hours", func() {
@@ -34,6 +37,10 @@ var _ = Describe("HumanTime", func() {
 
 			It("word units", func() {
 				Expect(ToMilliseconds("three second, two hours")).To(Equal(3*Second + 2*Hour))
+			})
+
+			It("word units", func() {
+				Expect(ToMilliseconds("ninety second, twenty hours")).To(Equal(90*Second + 20*Hour))
 			})
 
 			It("missing seconds, with hour, ignore missing seconds", func() {
