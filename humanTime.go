@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// Export Unit times in in milliseconds (easier testing)
 const (
 	unitRegexpPattern      = "(second|minute|hour|day|week|month|year)s?"
 	connectorRegexpPattern = "and|,"
@@ -20,18 +21,14 @@ const (
 	Year                   = Day * 365
 )
 
-/*
- * humanTime holds internal data and methods to help converting a human readable time string into milliseconds
- */
+// humanTime holds internal data and methods to help converting a human readable time string into milliseconds
 type humanTime struct {
 	languageMap     map[string]string // Word to number map
 	unitRegexp      *regexp.Regexp    // Cached unit regex
 	connectorRegexp *regexp.Regexp    // Cached connector regex
 }
 
-/*
- * processUnits converts time unit words like "minute" into the correct millisecond multiplier
- */
+// processUnits converts time unit words like "minute" into the correct millisecond multiplier
 func processUnits(time string) (int, error) {
 
 	if strings.TrimSpace(time) == "" {
@@ -68,10 +65,8 @@ func processUnits(time string) (int, error) {
 	return int(unitNum * num), nil
 }
 
-/*
- * ToMilliseconds converts a human readable interval string into milliseconds.
- * Example: ToMilliseconds("three minutes and five seconds") returns 3 * 60 * 1000 + 5 * 1000
- */
+// ToMilliseconds converts a human readable interval string into milliseconds.
+// Example: ToMilliseconds("three minutes and five seconds") returns 3 * 60 * 1000 + 5 * 1000
 func ToMilliseconds(humanReadableTime string) (int, error) {
 	return humanTime{map[string]string{
 		"one":     "1",
@@ -100,9 +95,7 @@ func ToMilliseconds(humanReadableTime string) (int, error) {
 	}.toMilliseconds(humanReadableTime)
 }
 
-/*
- * toMilliseconds converts a humanReadableTime string to milliseconds
- */
+// toMilliseconds converts a humanReadableTime string to milliseconds
 func (h humanTime) toMilliseconds(humanReadableTime string) (sum int, err error) {
 
 	defer func() {
@@ -126,9 +119,7 @@ func (h humanTime) toMilliseconds(humanReadableTime string) (sum int, err error)
 	return sum, err
 }
 
-/*
- * wordNumbersToDecimals replaces word numbers like "one", "two" into numeric literals like "1", "2" etc
- */
+// wordNumbersToDecimals replaces word numbers like "one", "two" into numeric literals like "1", "2" etc
 func (h humanTime) wordNumbersToDecimals(timeString string) string {
 
 	fields := strings.Fields(timeString)
