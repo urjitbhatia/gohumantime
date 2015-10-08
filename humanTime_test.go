@@ -28,6 +28,10 @@ var _ = Describe("HumanTime", func() {
 				Expect(ToMilliseconds("1 seconds and 3 hour")).To(Equal(Second + 3*Hour))
 			})
 
+			It("numeric fractional units", func() {
+				Expect(ToMilliseconds("1.3 seconds and 3 hour")).To(Equal(int(1.3*Second) + 3*Hour))
+			})
+
 			It("word units", func() {
 				Expect(ToMilliseconds("three second, two hours")).To(Equal(3*Second + 2*Hour))
 			})
@@ -64,14 +68,16 @@ var _ = Describe("HumanTime", func() {
 				Expect(ToMilliseconds("  foobar[] ")).To(Equal(0))
 			})
 		})
+
 		Context("benchMark", func() {
 			Measure("convert humanreadable strings to time", func(b Benchmarker) {
 				runtime := b.Time("runtime", func() {
-					output, _ := ToMilliseconds("4 seconds, 2 minutes 1 hour and 3 days and 10weeks, 1 month and 1 year")
-					Expect(output).To(Equal(34390924000))
+					output, _ := ToMilliseconds("4 seconds, 2.4 minutes 1 hour and 3.33 days and 10weeks, 1 month and 1 year")
+					Expect(output).To(Equal(34419460000))
 				})
-				Ω(runtime.Seconds()).Should(BeNumerically("<", 0.0005), "ToMilliseconds() shouldn't take more than 500 ns.")
-			}, 2000)
+
+				Ω(runtime.Seconds()).Should(BeNumerically("<", 0.0006), "ToMilliseconds() shouldn't take more than 800 ns.")
+			}, 3000)
 		})
 	})
 })

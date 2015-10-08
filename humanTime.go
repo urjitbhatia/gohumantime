@@ -42,12 +42,12 @@ func processUnits(time string) (int, error) {
 	if len(fields) < 2 {
 		return 0, errors.New("No usable time literals found")
 	}
-	num, err := strconv.Atoi(fields[0])
-	unit := fields[1]
+	num, err := strconv.ParseFloat(fields[0], 10)
 	if err != nil {
 		num = 1
 	}
-	var unitNum int
+	unit := fields[1]
+	var unitNum float64
 	switch unit {
 	case "second":
 		unitNum = Second
@@ -65,7 +65,7 @@ func processUnits(time string) (int, error) {
 		unitNum = Year
 	}
 
-	return unitNum * num, nil
+	return int(unitNum * num), nil
 }
 
 /*
