@@ -76,7 +76,7 @@ var _ = Describe("HumanTime", func() {
 					Expect(output).To(Equal(34419460000))
 				})
 
-				Ω(runtime.Seconds()).Should(BeNumerically("<", 0.0006), "ToMilliseconds() shouldn't take more than 800 ns.")
+				Ω(runtime.Seconds()).Should(BeNumerically("<", 0.0006), "ToMilliseconds() shouldn't take more than 600 ns.")
 			}, 3000)
 		})
 	})
