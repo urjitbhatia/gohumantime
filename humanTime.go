@@ -29,7 +29,7 @@ type humanTime struct {
 }
 
 // processUnits converts time unit words like "minute" into the correct millisecond multiplier
-func processUnits(time string) (int, error) {
+func (h humanTime) processUnits(time string) (int, error) {
 
 	if strings.TrimSpace(time) == "" {
 		return 0, nil
@@ -43,7 +43,7 @@ func processUnits(time string) (int, error) {
 	if err != nil {
 		num = 1
 	}
-	unit := fields[1]
+	unit := h.unitRegexp.FindString(time)
 	var unitNum float64
 	switch unit {
 	case "second":
@@ -69,6 +69,7 @@ func processUnits(time string) (int, error) {
 // Example: ToMilliseconds("three minutes and five seconds") returns 3 * 60 * 1000 + 5 * 1000
 func ToMilliseconds(humanReadableTime string) (int, error) {
 	return humanTime{map[string]string{
+		"now":     "0",
 		"one":     "1",
 		"two":     "2",
 		"three":   "3",
@@ -111,12 +112,12 @@ func (h humanTime) toMilliseconds(humanReadableTime string) (sum int, err error)
 	timeString := h.wordNumbersToDecimals(strings.ToLower(humanReadableTime))
 	timeString = h.unitRegexp.ReplaceAllString(timeString, "$1,")
 	for _, s := range h.connectorRegexp.Split(timeString, -1) {
-		s, err := processUnits(s)
+		s, err := h.processUnits(s)
 		if err == nil {
 			sum += s
 		}
 	}
-	return sum, err
+	return
 }
 
 // wordNumbersToDecimals replaces word numbers like "one", "two" into numeric literals like "1", "2" etc

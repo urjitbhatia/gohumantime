@@ -17,12 +17,28 @@ var _ = Describe("HumanTime", func() {
 				Expect(ToMilliseconds("three second")).To(Equal(3 * Second))
 			})
 
+			It("word *** minutes", func() {
+				Expect(ToMilliseconds("10 minutes")).To(Equal(10 * Minute))
+			})
+
 			It("missing seconds, return 0", func() {
 				Expect(ToMilliseconds("second")).To(Equal(0))
 			})
 
 			It("fifty seconds", func() {
 				Expect(ToMilliseconds("fifty seconds")).To(Equal(50 * Second))
+			})
+		})
+
+		Context("mixed units", func() {
+			It("numeric units", func() {
+				Expect(ToMilliseconds("10 minutes")).To(Equal(Minute * 10))
+			})
+		})
+
+		Context("now", func() {
+			It("now", func() {
+				Expect(ToMilliseconds("now")).To(Equal(0))
 			})
 		})
 
@@ -83,7 +99,7 @@ var _ = Describe("HumanTime", func() {
 					Expect(output).To(Equal(34419460000))
 				})
 
-				Ω(runtime.Seconds()).Should(BeNumerically("<", 0.0006), "ToMilliseconds() shouldn't take more than 600 ns.")
+				Ω(runtime.Seconds()).Should(BeNumerically("<", 0.006), "ToMilliseconds() shouldn't take more than 600 ns.")
 			}, 3000)
 		})
 	})
