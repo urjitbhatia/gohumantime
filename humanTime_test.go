@@ -30,6 +30,15 @@ var _ = Describe("HumanTime", func() {
 			})
 		})
 
+		Context("minutes", func() {
+			It("seventyfour minutes", func() {
+				Expect(ToMilliseconds("74 minutes")).To(Equal(74 * Minute))
+			})
+			It("60 minutes", func() {
+				Expect(ToMilliseconds("60 minutes")).To(Equal(60 * Minute))
+			})
+		})
+
 		Context("mixed units", func() {
 			It("numeric units", func() {
 				Expect(ToMilliseconds("10 minutes")).To(Equal(Minute * 10))
@@ -45,6 +54,10 @@ var _ = Describe("HumanTime", func() {
 		Context("seconds and hours", func() {
 			It("numeric units", func() {
 				Expect(ToMilliseconds("1 seconds and 3 hour")).To(Equal(Second + 3*Hour))
+			})
+
+			It("mixed units", func() {
+				Expect(ToMilliseconds("1 hour 14 minutes 0 seconds")).To(Equal(1*Hour + 14*Minute))
 			})
 
 			It("numeric fractional units", func() {
