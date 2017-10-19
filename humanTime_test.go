@@ -51,6 +51,12 @@ var _ = Describe("HumanTime", func() {
 			})
 		})
 
+		Context("milliseconds string", func() {
+			It("digits only", func() {
+				Expect(ToMilliseconds("11231234131")).To(Equal(11231234131))
+			})
+		})
+
 		Context("seconds and hours", func() {
 			It("numeric units", func() {
 				Expect(ToMilliseconds("1 seconds and 3 hour")).To(Equal(Second + 3*Hour))

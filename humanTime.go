@@ -99,6 +99,10 @@ func ToMilliseconds(humanReadableTime string) (int, error) {
 // toMilliseconds converts a humanReadableTime string to milliseconds
 func (h humanTime) toMilliseconds(humanReadableTime string) (sum int, err error) {
 
+	if ms, err := strconv.Atoi(humanReadableTime); err == nil {
+		// Easy way out - if already numeric, assume MS and return.
+		return ms, nil
+	}
 	defer func() {
 		if r := recover(); r != nil {
 			log.Println("Recovered panic in humanTime::ToMilliseconds", r)
